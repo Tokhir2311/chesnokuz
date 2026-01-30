@@ -3,7 +3,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker, Session
 from app.database import db_dep
 from app.models import Tag
-from app.schemas import TagCreateRequest, TagListResponse
+from app.schemas import TagCreateRequest, TagListResponse, TagUpdateRequest
 from app.utils import generate_slug
 
 
@@ -32,17 +32,21 @@ async def create_tag(session:db_dep, create_data : TagCreateRequest):
     return tag
 
 
-@router.put("update")
-async def update_tag(session:db_dep, name:str):
-    
-    stmt = select(Tag).where(Tag.name == name )
+@router.put("{tag_id}",response_model=TagListResponse)
+async def update_tag(session:db_dep, tag_id:int, update_data:TagUpdateRequest):
+    stmt = select(Tag).where(Tag.id == tag_id)
     res = session.execute(stmt)
     tag = res.scalars().first()
 
 
-    if not stmt:
+    if stmt is None :
         raise HTTPException(status_code=404, detail="Tag not found")
     
+    if update_data:
+        tag.name = update_data.name
+    if update_data:
+        tag.slug = generate_slug(update_data.name)
+
     session.commit()
     session.refresh(tag)
 
@@ -50,15 +54,13 @@ async def update_tag(session:db_dep, name:str):
 
 
 @router.delete("/delete", status_code=204)
-async def delete_tag(session:db_dep, tag_id : int):
-    stmt = select(Tag).where(Tag.id == tag_id)
+async def delete_tag(session:db_dep, tagni_id : int):
+    stmt = select(Tag).where(Tag.id == tagni_id)
     res = session.execute(stmt)
-
     tag = res.scalars().first()
 
-    if not tag_id:
+    if not tagni_id:
         raise HTTPException(status_code=404, detail="Tag not found")
-    
 
     session.delete(tag)
     session.commit()

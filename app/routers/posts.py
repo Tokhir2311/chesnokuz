@@ -1,5 +1,7 @@
+from datetime import datetime, timedelta
+
 from fastapi import APIRouter, HTTPException
-from sqlalchemy import select 
+from sqlalchemy import select, desc
 from sqlalchemy.orm import Session, sessionmaker
 from app.models import Post
 from app.database import db_dep
@@ -21,7 +23,7 @@ async def get_posts(session: db_dep, is_active: bool = None,):
     return res.scalars().all()
 
 
-@router.post("/create")
+@router.post("/create", response_model=PostListResponse)
 async def post_create( session: db_dep , 
     create_data: PostCreateRequest):
 
@@ -94,3 +96,17 @@ async def delete(session : db_dep, post_id : int):
 
     session.delete(post)
     session.commit()
+
+
+
+@router.get("/trends", response_model=list[PostListResponse])
+async def get_trend_posts(session:db_dep, limit:int =10):
+
+    weekly = datetime.now() - timedelta(days=7)
+
+    stmt = select(Post).where(Post.created_at >=weekly).order_by(desc(Post.views_cnt)).limit(limit)
+    res = session.execute(stmt)
+
+    trends = res.scalars().all()
+
+    return trends

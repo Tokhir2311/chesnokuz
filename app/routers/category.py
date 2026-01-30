@@ -25,7 +25,7 @@ async def get_cats(session :db_dep):
 async def create_cat(session:db_dep, create_data : CategoryCreateRequest):
     category = Category(
         name = create_data.name,
-        slug = generate_slug(create_data.title)
+        slug = generate_slug(create_data.name)
     )
 
     session.add(category)
@@ -47,6 +47,8 @@ async def update(session : db_dep, category_id:int, update_data: CategoryCreateR
     
     if cat.name:
         cat.name = update_data.name 
+        cat.slug = generate_slug(update_data.name)
+    
 
     session.commit()
     session.refresh(cat)

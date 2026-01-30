@@ -19,8 +19,9 @@ async def get_users(session:db_dep):
 @router.post("/create")
 async def create_user(session:db_dep, create_data:UserCreateRequest):
     user = Users(
+        profession_id = create_data.profession_id,
         email = create_data.email,
-        password = create_data.password_hash,
+        password_hash = create_data.password_hash,
         name = create_data.name,
         surname = create_data.surname,
         bio = create_data.bio,
