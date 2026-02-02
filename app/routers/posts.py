@@ -2,12 +2,12 @@ from datetime import datetime, timedelta
 
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import select, desc
-from sqlalchemy.orm import Session, sessionmaker
-from app.models import Post
+from sqlalchemy.orm import Session, sessionmaker, session
+from app.models import Post, Category, Users
 from app.database import db_dep
 from app.schemas import PostListResponse, PostCreateRequest, PostUpdateRequest
 from app.utils import generate_slug
-
+from enum import Enum 
 router = APIRouter(prefix="/posts", tags=["Posts"])
 
 
@@ -31,6 +31,12 @@ async def post_create( session: db_dep ,
         title = create_data.title,
         body = create_data.body,
         slug=generate_slug(create_data.title),
+        category_id = create_data.category_id,
+        views_cnt = create_data.views_cnt,
+        likes_cnt = create_data.likes_cnt,
+        comments_cnt = create_data.comments_cnt,
+        is_active = create_data.is_active,
+        user_id = create_data.user_id
     )
 
     session.add(post)
@@ -110,3 +116,37 @@ async def get_trend_posts(session:db_dep, limit:int =10):
     trends = res.scalars().all()
 
     return trends
+
+
+
+# FILTERS
+
+class by_cat(str, Enum):
+    Jahon = "Jahon"
+    Sport = "Sport"
+    Ilmiy = "Ilmiy"
+    Ijtimoiy = "Ijtimoiy"
+    Siyosiy = "Siyosiy"
+
+
+@router.get("/{categ}/", response_model=list[PostListResponse])
+async def get_bycat(categ:by_cat, session: db_dep):
+    stmt1 = select(Category.id).where(Category.name == categ)
+    stmt = select(Post).where(Post.category_id == stmt1) 
+
+    res = session.execute(stmt)
+    return res.scalars().all()
+    
+
+@router.get("/{user}", response_model=list[PostListResponse])
+async def get_byuser(session: db_dep, user: str):
+    stmtx = select(Users.id).where(Users.name.ilike(f"%{user}"))      #.ilike(f"%{query}%")
+    stmt = select(Post).where(Post.user_id == stmtx)
+    res = session.execute(stmt)
+
+    return res.scalars().all()
+
+
+# @router.get("/{tag}", response_model=list[PostListResponse])
+# async def get_bytag(session : db_dep, tag: str):
+#     stmt = select(Post).where(Post.tag_id == tag) 

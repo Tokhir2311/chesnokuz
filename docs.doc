@@ -1,0 +1,10 @@
+from typing import Annotated
+from fastapi import APIRouter, Path, Query, HTTPException, status, Header
+
+
+router = APIRouter(prefix="/auth", tags=["Auth"])
+
+@router.get("/profile/{user_id}")
+async def get_profile(
+    user_id: Annotated[int, Path(title="User ID", description = "Faqat 10 ishlaydi", gt = 0)]
+)

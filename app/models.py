@@ -44,7 +44,7 @@ class Media(Base):
 class Post(BaseModel):
     __tablename__ = "post"
 
-    user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("user.id"), nullable=True)
+    user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"), nullable=True)
     title: Mapped[str] = mapped_column(String(255))
     slug: Mapped[str] = mapped_column(String(100), unique=True)
     body: Mapped[str] = mapped_column(Text)
@@ -58,14 +58,15 @@ class Post(BaseModel):
     tag: Mapped[list["Tag"]] = relationship("Tag", secondary="post_tag", back_populates="posts" )
     category: Mapped["Category"] = relationship("Category", back_populates="post")
     media: Mapped["Media"] = relationship("Media", secondary="post_media", back_populates="post")
-    
+    like: Mapped["Like"] = relationship(back_populates="post")
+    user: Mapped["Users"] = relationship(back_populates="posts")
 
     def __repr__(self):
         return {self.title}
 
 
 class Users(BaseModel):
-    __tablename__="user"
+    __tablename__="users"
 
     profession_id :Mapped[int] = mapped_column(BigInteger, ForeignKey("profession.id"))
     email: Mapped[str] = mapped_column(String, unique=True, nullable=False)
@@ -79,8 +80,9 @@ class Users(BaseModel):
     is_staff: Mapped[bool] = mapped_column(Boolean, nullable=True)
     is_superuser: Mapped[bool] = mapped_column(Boolean, nullable=True)
 
-    profession: Mapped["Profession"] = relationship("Profession", back_populates="user")
+    professions: Mapped["Profession"] = relationship("Profession", back_populates="users")
     comments: Mapped[list["Comment"]] = relationship("Comment", back_populates="user")
+    posts: Mapped[list["Post"]] = relationship(back_populates="user")
 
     def __repr__(self):
         return {self.name}
@@ -91,7 +93,7 @@ class Profession(Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
 
-    user: Mapped[list["Users"]] = relationship("Users", back_populates="profession")
+    users: Mapped[list["Users"]] = relationship("Users", back_populates="professions")
 
     def __repr__(self):
         return {self.name}
@@ -100,10 +102,10 @@ class Profession(Base):
 class Comment(BaseModel):
     __tablename__ = "comment"
 
-    user_id : Mapped[int] = mapped_column(BigInteger, ForeignKey(Users.id), default=1)
-    post_id : Mapped[int] = mapped_column(BigInteger, ForeignKey(Post.id), default=1)
+    user_id : Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"))
+    post_id : Mapped[int] = mapped_column(BigInteger, ForeignKey("post.id"))
     text : Mapped[str] = mapped_column(Text)
-    is_active : Mapped[bool] = mapped_column(Boolean)
+    is_active : Mapped[bool] = mapped_column(Boolean, nullable=True)
 
     user: Mapped["Users"] = relationship("Users", back_populates="comments")
     post: Mapped["Post"] = relationship("Post", back_populates="comments")
@@ -149,9 +151,13 @@ class Like(Base):
     __tablename__ = "likes"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
-    post_id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
-    device_id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    post_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("post.id"))
+    device_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("devices.id"))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=func.now())
+
+    device: Mapped[list["Devices"]] = relationship(back_populates="like")
+    post: Mapped[list["Post"]] = relationship(back_populates="like")
+
 
 class Devices(Base):
     __tablename__="devices"
@@ -161,7 +167,7 @@ class Devices(Base):
     last_active: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=func.now()) 
     created_at : Mapped[datetime] = mapped_column(DateTime(timezone=True), default=func.now())
 
-
+    like: Mapped["Like"] = relationship(back_populates="device")
 
 class User_Search(Base):
     __tablename__ = "user_search"

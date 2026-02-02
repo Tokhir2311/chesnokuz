@@ -16,7 +16,7 @@ async def get_users(session:db_dep):
     return res.scalars().all()
 
     
-@router.post("/create")
+@router.post("/create", response_model=list[UserListResponse])
 async def create_user(session:db_dep, create_data:UserCreateRequest):
     user = Users(
         profession_id = create_data.profession_id,
@@ -25,7 +25,9 @@ async def create_user(session:db_dep, create_data:UserCreateRequest):
         name = create_data.name,
         surname = create_data.surname,
         bio = create_data.bio,
-        is_active = create_data.is_active
+        is_active = create_data.is_active,
+        is_staff = create_data.is_staff,
+        is_superuser = create_data.is_superuser
     )
 
     res = session.add(user)

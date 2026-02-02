@@ -1,6 +1,6 @@
 from datetime import datetime
-from pydantic import BaseModel, EmailStr
-
+from pydantic import BaseModel, EmailStr, Field, AliasPath
+from typing import List 
 
 
 class PostCreateRequest(BaseModel):
@@ -37,8 +37,7 @@ class CategoryListResponse(BaseModel):
 
 
 class UserListResponse(BaseModel):
-    email:EmailStr
-    pasword_hash:str
+    email:str
     name:str
     surname:str
     bio:str
@@ -51,8 +50,8 @@ class UserCreateRequest(BaseModel):
     name:str
     surname:str
     bio:str
-    is_active:bool | None = None
-    is_stuff: bool | None = None
+    is_active: bool | None = None
+    is_staff: bool | None = None
     is_superuser : bool | None = None
 
 
@@ -100,3 +99,33 @@ class CommentListResponse(BaseModel):
     post_id : int
     text: str
     is_active : bool
+
+
+class WeatherCoord(BaseModel):
+    lon: float
+    lat: float
+
+
+class WeatherInline(BaseModel):
+    id: int
+    main: str
+    description: str
+    icon: str
+
+
+class WeatherMainInline(BaseModel):
+    temp: float
+    feels_like: float
+    temp_min: float
+    temp_max: float
+    pressure: int 
+    humidity: int 
+    sea_level: int
+    grnd_level: int
+
+
+class WeatherResponse(BaseModel):
+    coord: WeatherCoord
+    weather: list[WeatherInline]
+    temp: float = Field(validation_alias=AliasPath("main", "temp"))
+    humidity: int = Field(validation_alias=AliasPath("main", "humidity"))

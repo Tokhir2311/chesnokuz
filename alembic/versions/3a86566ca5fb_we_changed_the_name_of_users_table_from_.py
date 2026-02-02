@@ -1,8 +1,8 @@
-"""create initial tables
+"""we changed the name of Users table from user to use_r
 
-Revision ID: 2cfff4b4689a
-Revises: e3bafe71071e
-Create Date: 2026-01-28 10:27:38.045187
+Revision ID: 3a86566ca5fb
+Revises: 
+Create Date: 2026-02-01 08:33:36.315212
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '2cfff4b4689a'
-down_revision: Union[str, Sequence[str], None] = 'e3bafe71071e'
+revision: str = '3a86566ca5fb'
+down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -27,20 +27,44 @@ def upgrade() -> None:
     sa.Column('slug', sa.String(), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('devices',
+    sa.Column('id', sa.BigInteger(), nullable=False),
+    sa.Column('user_agent', sa.String(), nullable=False),
+    sa.Column('last_active', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('likes',
+    sa.Column('id', sa.BigInteger(), nullable=False),
+    sa.Column('post_id', sa.BigInteger(), nullable=False),
+    sa.Column('device_id', sa.BigInteger(), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
+    sa.PrimaryKeyConstraint('id', 'post_id', 'device_id')
+    )
+    op.create_table('media',
+    sa.Column('id', sa.BigInteger(), nullable=False),
+    sa.Column('url', sa.String(length=100), nullable=False),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('profession',
     sa.Column('id', sa.BigInteger(), nullable=False),
     sa.Column('name', sa.String(length=100), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('tag',
+    sa.Column('id', sa.BigInteger(), nullable=False),
     sa.Column('name', sa.String(), nullable=False),
     sa.Column('slug', sa.String(), nullable=False),
-    sa.Column('id', sa.BigInteger(), nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('user',
+    op.create_table('user_search',
+    sa.Column('id', sa.BigInteger(), nullable=False),
+    sa.Column('item', sa.String(), nullable=False),
+    sa.Column('cnt', sa.BigInteger(), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('users',
     sa.Column('profession_id', sa.BigInteger(), nullable=False),
     sa.Column('email', sa.String(), nullable=False),
     sa.Column('password_hash', sa.String(length=120), nullable=False),
@@ -59,6 +83,24 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email')
     )
+    op.create_table('post',
+    sa.Column('user_id', sa.BigInteger(), nullable=True),
+    sa.Column('title', sa.String(length=255), nullable=False),
+    sa.Column('slug', sa.String(length=100), nullable=False),
+    sa.Column('body', sa.Text(), nullable=False),
+    sa.Column('category_id', sa.BigInteger(), nullable=False),
+    sa.Column('views_cnt', sa.BigInteger(), nullable=False),
+    sa.Column('likes_cnt', sa.BigInteger(), nullable=False),
+    sa.Column('comments_cnt', sa.BigInteger(), nullable=False),
+    sa.Column('is_active', sa.Boolean(), nullable=False),
+    sa.Column('id', sa.BigInteger(), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
+    sa.ForeignKeyConstraint(['category_id'], ['category.id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('slug')
+    )
     op.create_table('comment',
     sa.Column('user_id', sa.BigInteger(), nullable=False),
     sa.Column('post_id', sa.BigInteger(), nullable=False),
@@ -68,39 +110,39 @@ def upgrade() -> None:
     sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
     sa.ForeignKeyConstraint(['post_id'], ['post.id'], ),
-    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('post_media',
+    sa.Column('post_id', sa.BigInteger(), nullable=False),
+    sa.Column('media_id', sa.BigInteger(), nullable=False),
+    sa.ForeignKeyConstraint(['media_id'], ['media.id'], ),
+    sa.ForeignKeyConstraint(['post_id'], ['post.id'], ),
+    sa.PrimaryKeyConstraint('post_id', 'media_id')
+    )
     op.create_table('post_tag',
-    sa.Column('id', sa.BigInteger(), nullable=False),
     sa.Column('post_id', sa.BigInteger(), nullable=False),
     sa.Column('tag_id', sa.BigInteger(), nullable=False),
     sa.ForeignKeyConstraint(['post_id'], ['post.id'], ),
     sa.ForeignKeyConstraint(['tag_id'], ['tag.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('post_id', 'tag_id')
     )
-    op.add_column('post', sa.Column('category_id', sa.BigInteger(), nullable=False))
-    op.add_column('post', sa.Column('views_cnt', sa.BigInteger(), nullable=False))
-    op.add_column('post', sa.Column('likes_cnt', sa.BigInteger(), nullable=False))
-    op.add_column('post', sa.Column('comments_cnt', sa.BigInteger(), nullable=False))
-    op.create_foreign_key(None, 'post', 'category', ['category_id'], ['id'])
-    op.add_column('post_media', sa.Column('id', sa.BigInteger(), nullable=False))
     # ### end Alembic commands ###
 
 
 def downgrade() -> None:
     """Downgrade schema."""
     # ### commands auto generated by Alembic - please adjust! ###
-    op.drop_column('post_media', 'id')
-    op.drop_constraint(None, 'post', type_='foreignkey')
-    op.drop_column('post', 'comments_cnt')
-    op.drop_column('post', 'likes_cnt')
-    op.drop_column('post', 'views_cnt')
-    op.drop_column('post', 'category_id')
     op.drop_table('post_tag')
+    op.drop_table('post_media')
     op.drop_table('comment')
-    op.drop_table('user')
+    op.drop_table('post')
+    op.drop_table('users')
+    op.drop_table('user_search')
     op.drop_table('tag')
     op.drop_table('profession')
+    op.drop_table('media')
+    op.drop_table('likes')
+    op.drop_table('devices')
     op.drop_table('category')
     # ### end Alembic commands ###
