@@ -129,3 +129,8 @@ class WeatherResponse(BaseModel):
     weather: list[WeatherInline]
     temp: float = Field(validation_alias=AliasPath("main", "temp"))
     humidity: int = Field(validation_alias=AliasPath("main", "humidity"))
+
+
+class UserRegisterRequest(BaseModel):
+    email: EmailStr
+    password: str

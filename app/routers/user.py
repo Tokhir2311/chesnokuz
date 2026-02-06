@@ -21,7 +21,7 @@ async def create_user(session:db_dep, create_data:UserCreateRequest):
     user = Users(
         profession_id = create_data.profession_id,
         email = create_data.email,
-        password_hash = create_data.password_hash,
+        password_hash = create_data.password_hash,      #utils
         name = create_data.name,
         surname = create_data.surname,
         bio = create_data.bio,

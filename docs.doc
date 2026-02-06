@@ -7,4 +7,45 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 @router.get("/profile/{user_id}")
 async def get_profile(
     user_id: Annotated[int, Path(title="User ID", description = "Faqat 10 ishlaydi", gt = 0)]
-)
+):
+
+
+    if user_id !=10:
+        raise HTTPException(status_code=status,HTTP_401_UNAUTHORISED, detail = "Kalit xato"
+        )
+
+    return {""message": "Dashboardga kirdinggiz!"}
+
+
+
+
+@router.get("/admin/{admin_id}")
+async def admin_access(admin_id: Annotated[int, Path(title="Admin ID", ge=1)],
+    token: Annotated[str, Query(title="Admin MAxfiy Token")]):
+
+
+    if admin_id ==1 and token == "admin777"
+        return{"admin": "Farrukh", "status":"Admin huquqi tasdiqlandi"}
+
+
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail = "Sizda adminlik huquqi yo`q"
+    )
+
+
+
+
+
+@router.get("/secret_data")
+async def get_secret_data(
+    x_token: Annotated[str | None, Header(description="Maxfiy token: my-secret-token")] = None):
+
+
+    if x_token == "admin123":
+        return {"data" : "Bu maxfiy malumot uni faqat Header orqali oqish mumkin"}
+
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORISED,
+        detail="Headerda token yuborilmadi yoki noto`g`ri"
+    )

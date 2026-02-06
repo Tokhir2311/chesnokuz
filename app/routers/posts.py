@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Cookie, Response
 from sqlalchemy import select, desc
 from sqlalchemy.orm import Session, sessionmaker, session
 from app.models import Post, Category, Users
@@ -9,6 +9,14 @@ from app.schemas import PostListResponse, PostCreateRequest, PostUpdateRequest
 from app.utils import generate_slug
 from enum import Enum 
 router = APIRouter(prefix="/posts", tags=["Posts"])
+
+
+@router.get("/")
+async def cooke(response: Response):
+    response.set_cookie(key="it is key", value="it is value")
+    return{"message": "cookie is here"}
+
+
 
 
 @router.get("/", response_model=list[PostListResponse])
@@ -21,6 +29,18 @@ async def get_posts(session: db_dep, is_active: bool = None,):
     stmt = stmt.order_by(Post.created_at.desc())
     res = session.execute(stmt)
     return res.scalars().all()
+
+
+
+
+@router.get("/title", response_model=list[PostListResponse])
+async def getByname(session : db_dep, title:str):
+    stmt = select(Post).where(Post.title.ilike(f"%{title}%"))
+    res = session.execute(stmt)
+
+    return res.scalars().all()
+
+
 
 
 @router.post("/create", response_model=PostListResponse)
