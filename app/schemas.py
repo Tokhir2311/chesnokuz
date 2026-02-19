@@ -56,11 +56,11 @@ class UserCreateRequest(BaseModel):
 
 
 class UserUpdateRequest(BaseModel):
-    email: EmailStr
-    password_hash:str
-    name:str
-    surname:str
-    bio:str
+    email: EmailStr | None = None
+    password_hash:str | None = None
+    name:str | None = None
+    surname:str | None = None
+    bio:str | None = None
     is_active:bool | None = None
     is_stuff: bool | None = None
     is_superuser : bool | None = None
@@ -133,4 +133,11 @@ class WeatherResponse(BaseModel):
 
 class UserRegisterRequest(BaseModel):
     email: EmailStr
+    password: str
+
+    #zxcvbn qoyishh kk
+
+
+class UserLoginRequest(BaseModel):
+    username: EmailStr
     password: str

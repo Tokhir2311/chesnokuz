@@ -5,7 +5,8 @@ from .tag import router as tags_router
 from .profession import router as prof_router
 from .comment import router as comment_router
 from .wetaherapi import router as weather_router
-from .auth import router as auth_router
+from .auth.basic import router as basic_router
+from .auth.register import router as register_router
 __all__ = [
             "posts_router", 
            "category_router", 
@@ -14,5 +15,6 @@ __all__ = [
            "prof_router", 
            "comment_router", 
            "weather_router",
-           "auth_router" 
+           "basic_router",
+           "register_router"
            ]
