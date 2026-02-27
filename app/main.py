@@ -1,6 +1,6 @@
 from fastapi import FastAPI , HTTPException, Query 
 
-from app.routers import posts_router , category_router, user_router, tags_router, prof_router, comment_router, weather_router, register_router, basic_router
+from app.routers import posts_router , category_router, user_router, tags_router, prof_router, comment_router, weather_router, register_router, basic_router, session_router
 #from app.routers.auth import bas
 
 
@@ -19,3 +19,4 @@ app.include_router(comment_router)
 app.include_router(weather_router)
 app.include_router(register_router)
 app.include_router(basic_router)
+app.include_router(session_router)

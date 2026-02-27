@@ -86,6 +86,7 @@ class Users(BaseModel):
     professions: Mapped["Profession"] = relationship("Profession", back_populates="users")
     comments: Mapped[list["Comment"]] = relationship("Comment", back_populates="user")
     posts: Mapped[list["Post"]] = relationship(back_populates="user")
+    user_sessions: Mapped[list[User_session_token]] = relationship(back_populates="user", lazy="raise_on_sql")
 
     def __repr__(self):
         return {self.name}
@@ -171,7 +172,8 @@ class Devices(Base):
     created_at : Mapped[datetime] = mapped_column(DateTime(timezone=True), default=func.now())
 
     like: Mapped["Like"] = relationship(back_populates="device")
-
+    def __repr__(self):
+        return f"devive - {self.user_agent}"
 class User_Search(Base):
     __tablename__ = "user_search"
 
@@ -179,3 +181,18 @@ class User_Search(Base):
     item: Mapped[str] = mapped_column(String, nullable=False)
     cnt : Mapped[int] = mapped_column(BigInteger, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=func.now())                 
+
+class User_session_token(Base):
+    __tablename__ = "user_sessions"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    user_id:Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"))
+    token:Mapped[str] = mapped_column(String(255), nullable=False)
+    created_at:Mapped[datetime] = mapped_column(DateTime(timezone=True), default=func.now())
+    expires_at:Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+    user:Mapped["Users"] = relationship(back_populates="user_sessions")
+
+    def __repr__(self):
+        return f"user - {self.user_id}"

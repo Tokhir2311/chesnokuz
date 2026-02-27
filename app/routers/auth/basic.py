@@ -9,7 +9,7 @@ from app.models import Users
 from app.schemas import  UserUpdateRequest 
 from app.dependencies import basic_auth_dep, basic_cur_user_get
 
-router = APIRouter(prefix="/basic", tags=["/Auth"])
+router = APIRouter(prefix="/basic", tags=["Auth"])
 
 @router.get("/profile")
 async def login(db:db_dep, current_user:basic_auth_dep):
